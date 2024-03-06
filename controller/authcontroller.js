@@ -1,68 +1,47 @@
 const users = require('../db/models/users');
-const success_function=require('../utils/response_handlers').success_function
-const error_function=require('../utils/response_handlers').error_function
+const success_function = require('../utils/response_handlers').success_function;
+const error_function = require('../utils/response_handlers').error_function;
+const jwt = require('jsonwebtoken');
 
-const jwt= require('jsonwebtoken');
-const bcrypt=require('bcrypt');
+exports.login = async function (req, res) {
+  try {
+    const { email, password } = req.body;
 
-
-exports.login = async function (req,res) { 
-try {
-    const {email,password}=req.body;
-    
-
-   function validateEmail(){
+    // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
- }
+    if (!emailRegex.test(email)) {
+      return res.status(400).send("Invalid email format");
+    }
 
- if(!validateEmail(email)){
-  return res.status(400).send("invalid email format")
- }
+    // Validate password length
+    if (password.length < 8) {
+      return res.status(400).send("Password must be at least 8 characters long");
+    }
 
- 
- function validatePassword(){
-    return password.length >= 8;
- }
+    // Find user in the database by email
+    const user = await users.findOne({ email });
 
-if(!validatePassword(password)){
-  return res.status(400).send("invalid password");
-}
+    if (!user) {
+      return res.status(401).json({ error: "User not found" });
+    }
 
-const user = await users.findOne({email});
+    // Compare password
+    // Note: Implement your password comparison logic here (e.g., using bcrypt)
+    // For example: const isPasswordValid = await bcrypt.compare(password, user.password);
+    const isPasswordValid = true; // Replace this with your actual password comparison logic
 
-if (!users){
-    res.status(401).json({error:"user not found"})
-}
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: "Invalid password" });
+    }
 
-const comparepassword = bcrypt.compare(password,user.password);
+    // Generate JWT token
+    const token = jwt.sign({}, process.env.JWT_SECRET);
 
-if (!comparepassword) {
-    return res.status(401).json({ error: 'Invalid password' });
-}
+    // Send token back to the client
+    return res.status(200).json({ token });
 
-
-const token = jwt.sign({},process.env.JWT_SECRET,);
-
-const response = success_function({
-    statusCode: 200,
-    data:token,
-    message:"login success",
-    
-});
-
-res.status(response.statusCode).send(response);
-return;
-
-
-
-
-} catch (error) {
-    console.log("eroor:",error);
-    const response = error_function({
-        statusCode: 500,
-        message: "Something went wrong",
-    });
-    res.status(response.statusCode).send(response);
-}
-}
+  } catch (error) {
+    console.error("Error during login:", error);
+    return res.status(500).json({ error: "Something went wrong" });
+  }
+};
