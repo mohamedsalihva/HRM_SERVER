@@ -63,4 +63,38 @@ exports.Adduser = async function(req, res) {
     res.status(response.statusCode).send(response);
     return;
   }
+};
+
+
+exports.ViewList = async function (req,res){
+  try {
+    let allUsers = await users.find();
+     
+    if (allUsers.length>0){
+      let response= success_function({
+        statusCode: 200,
+        data: allUsers,
+        message: "Users retrieved successfully"
+      })
+      res.status(response.statusCode).send(response);
+      return;
+
+    }else{
+      let response =error_function({
+        statusCode:400,
+        message:"user not found"
+      })
+      res.status(response.statusCode).send(response);
+      return;
+    }
+  } catch (error) {
+    console.log("error:",error);
+    let response= error_function({
+      statusCode:401,
+      message:"something went wrong"
+    });
+    res.status(response.statusCode).send(response);
+    return;
+
+  }
 }
