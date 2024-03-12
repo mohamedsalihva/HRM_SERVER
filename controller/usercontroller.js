@@ -15,7 +15,7 @@ exports.Adduser = async function(req, res) {
     if(user) {
         let response = error_function({
             statusCode : 400,
-            message : "User already exists",
+            message : "User already existed",
         });
         
         res.status(response.statusCode).send(response);
