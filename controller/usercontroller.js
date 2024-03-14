@@ -2,6 +2,7 @@ const users = require('../db/models/users');
 const success_function = require('../utils/response_handlers').success_function;
 const error_function = require('../utils/response_handlers').error_function;
 const bcrypt = require('bcrypt');
+const {ObjectId } = require("mongodb");
 
 
 
@@ -98,3 +99,40 @@ exports.ViewList = async function (req,res){
 
   }
 }
+
+
+
+
+exports.UpdateUser = async (req, res) => {
+  try {
+    const data = req.body;
+    console.log("data:", data);
+    
+    const finalData = {
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      address: data.address
+    };
+
+    const userId = data.id;
+    console.log("id : ", userId);
+
+    const updatedUser = await users.findByIdAndUpdate(userId, finalData, { new: true });
+
+    if (!updatedUser)  {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+
+    return res.status(200).json({
+      statusCode: 200,
+      data: updatedUser,
+      message: "User updated successfully"
+    });
+  } catch (error) {
+    console.error("error:", error);
+    return res.status(500).json({ statusCode: 500, message: "Something went wrong" });
+  }
+};
+
