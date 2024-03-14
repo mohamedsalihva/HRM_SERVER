@@ -50,7 +50,7 @@ exports.login = async function(req, res) {
     const response = success_function({
       statusCode: 200,
       data:token,
-      message:"login success",
+      message:"login successs",
       
     })
    
