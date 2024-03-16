@@ -2,7 +2,7 @@ const users = require('../db/models/users');
 const success_function = require('../utils/response_handlers').success_function;
 const error_function = require('../utils/response_handlers').error_function;
 const bcrypt = require('bcrypt');
-const {ObjectId } = require("mongodb");
+
 
 
 
@@ -135,4 +135,50 @@ exports.UpdateUser = async (req, res) => {
     return res.status(500).json({ statusCode: 500, message: "Something went wrong" });
   }
 };
+
+
+exports.DeleteUser = async (req,res)=>{
+   try {
+     let data = req.body;
+     console.log("data:",data);
+
+    let finalData = {
+      name:data.name,
+      email:data.email,
+      password:data.password,
+      address:data.address
+    }
+
+    let id = data.id;
+    console.log("id:",id);
+    console.log("typeOf(id) : ",typeof(id));
+
+
+    let deletedUser = await users.deleteOne({id},{$set :finalData});
+
+    let response = success_function({
+      statusCode: 200,
+      data: deletedUser,
+      message: "User deleted successfully",
+    })
+
+   error_function({
+      statusCode: 404,
+      message: "User not found",
+    });
+
+res.status(response.statusCode).send(response);
+
+
+} catch (error) {
+console.log("error : ", error);
+let response = error_function({
+  statusCode: 500,
+  message: "Something went wrong",
+});
+res.status(response.statusCode).send(response);
+}
+}
+
+
 
