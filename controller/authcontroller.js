@@ -12,23 +12,23 @@ exports.login = async function(req, res) {
    
 
 
-   function validateEmail(){
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return emailRegex.test(email);
-   }
+  //  function validateEmail(){
+  //     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  //     return emailRegex.test(email);
+  //  }
 
-   if(!validateEmail(email)){
-    return res.status(400).send("invalid email format")
-   }
+  //  if(!validateEmail(email)){
+  //   return res.status(400).send("invalid email format")
+  //  }
 
    
-   function validatePassword(){
-      return password.length >= 8;
-   }
+  //  function validatePassword(){
+  //     return password.length >= 8;
+  //  }
 
-  if(!validatePassword(password)){
-    return res.status(400).send("invalid password");
-  }
+  // if(!validatePassword(password)){
+  //   return res.status(400).send("invalid password");
+  // }
 
 
   const user = await users.findOne({ email });

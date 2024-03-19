@@ -10,17 +10,17 @@ exports.Adduser = async function(req, res) {
   try {
    const {name,email,password,address} = req.body
    
-      function validateEmail (){
-        const EmailRegex =/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-         return EmailRegex.test(email)
-      }
-      if(!validateEmail(email)){
-        return res.status(400).send("invalid email format")
-      }
+    //   function validateEmail (){
+    //     const EmailRegex =/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    //      return EmailRegex.test(email)
+    //   }
+    //   if(!validateEmail(email)){
+    //     return res.status(400).send("invalid email format")
+    //   }
 
-    function validatePassword(){
+    // function validatePassword(){
       
-    }
+    // }
 
 
     
