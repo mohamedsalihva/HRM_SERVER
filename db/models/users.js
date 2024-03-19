@@ -17,9 +17,9 @@ const users = mongoose.Schema({
     },
     address:{
         type:String,
-        
-
-    }
+    
+    },
+    user_type:{ type :mongoose.Schema.Types.ObjectId, ref:"user_types"}
 });
 
 module.exports =  mongoose.model("users",users);
