@@ -2,25 +2,33 @@ const users = require('../db/models/users');
 const success_function = require('../utils/response_handlers').success_function;
 const error_function = require('../utils/response_handlers').error_function;
 const bcrypt = require('bcrypt');
+const AddUserValidation = require('../validation/AddUser-validation');
 
 
 
 
 exports.Adduser = async function(req, res) {
   try {
-   const {name,email,password,address} = req.body
-   
-    //   function validateEmail (){
-    //     const EmailRegex =/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    //      return EmailRegex.test(email)
-    //   }
-    //   if(!validateEmail(email)){
-    //     return res.status(400).send("invalid email format")
-    //   }
 
-    // function validatePassword(){
-      
-    // }
+
+const {errors, isvalid}  = AddUserValidation(req);
+
+
+if(!isvalid){
+  let response = error_function({
+     statusCode:400,
+     message:"validation failed"
+  });
+  response.errors = errors;
+  res.status(response.statusCode).send(response);
+}
+
+
+
+
+
+   const {name,email,password,address} = req.body
+  
 
 
     
@@ -28,6 +36,7 @@ exports.Adduser = async function(req, res) {
 
     if(user) {
         let response = error_function({
+
             statusCode : 400,
             message : "User already existed",
         });

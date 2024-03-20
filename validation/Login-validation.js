@@ -3,19 +3,23 @@ const isEmpty = require('./is_empty');
 const users = require('../db/models/users')
 
 
-module.exports = function validateLogin (data){
+module.exports = function validateLogin (req){
+   
      let errors ={};
+
+     const { email , password} = req.body;
+
      console.log("validation file reached");
 
-     data.email = !isEmpty(data.email)? data.email :"";
-     data.password = !isEmpty(data.password)? data.password : "";
+     const emailValue = !isEmpty(email)? email :"";
+     const passwordValue = !isEmpty(password)? password : "";
 
 
-     if (validator.isEmpty(data.email)){
+     if (validator.isEmpty(emailValue)){
         errors.email = "email feild is required"
      }
 
-     if(validator.isEmpty(data.password)){
+     if(validator.isEmpty(passwordValue)){
         errors.password = "password feild is required"
      }
 

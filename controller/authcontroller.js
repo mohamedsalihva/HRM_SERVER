@@ -1,34 +1,31 @@
 const users = require('../db/models/users');
 const success_function = require('../utils/response_handlers').success_function;
 const error_function = require('../utils/response_handlers').error_function;
+const validateLogin = require('../validation/Login-validation')
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
 exports.login = async function(req, res) {
   
   try {
+     
+    const {login_errors , login_valid} = validateLogin(req);
+
+    if(!login_valid){
+
+       let response = error_function({
+        statusCode:400,
+        message: "validation failed"
+       });
+       response.login_errors = login_errors;
+       res.status(response.statusCode).send(response);
+    }
+
+
+
     let email = req.body.email
     let password = req.body.password
    
-
-
-  //  function validateEmail(){
-  //     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  //     return emailRegex.test(email);
-  //  }
-
-  //  if(!validateEmail(email)){
-  //   return res.status(400).send("invalid email format")
-  //  }
-
-   
-  //  function validatePassword(){
-  //     return password.length >= 8;
-  //  }
-
-  // if(!validatePassword(password)){
-  //   return res.status(400).send("invalid password");
-  // }
 
 
   const user = await users.findOne({ email });
