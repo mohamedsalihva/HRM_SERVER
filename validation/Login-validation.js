@@ -5,6 +5,8 @@ const users = require('../db/models/users')
 
 module.exports = function validateLogin (req){
    
+
+   
      let errors ={};
 
      const { email , password} = req.body;

@@ -3,6 +3,7 @@ const success_function = require('../utils/response_handlers').success_function;
 const error_function = require('../utils/response_handlers').error_function;
 const bcrypt = require('bcrypt');
 const AddUserValidation = require('../validation/AddUser-validation');
+const EditUserValidation = require('../validation/EditUser-validation');
 
 
 
@@ -10,28 +11,22 @@ const AddUserValidation = require('../validation/AddUser-validation');
 exports.Adduser = async function(req, res) {
   try {
 
+    const { errors, isValid } = AddUserValidation(req);
 
-const {errors, isvalid}  = AddUserValidation(req);
-
-
-if(!isvalid){
-  let response = error_function({
-     statusCode:400,
-     message:"validation failed"
-  });
-  response.errors = errors;
-  res.status(response.statusCode).send(response);
-}
-
-
-
+    if (!isValid) {
+        let response = {
+            success: false,
+            statusCode: 400,
+            message: "Validation failed",
+          
+        };
+        response.errors = errors;
+        return res.status(400).json(response);
+    }
 
 
    const {name,email,password,address} = req.body
   
-
-
-    
     let user = await users.findOne({email});
 
     if(user) {
@@ -54,8 +49,8 @@ if(!isvalid){
     let new_user = await users.create({
       name,
       email,
-      address,
       password: hashed_password,
+      address,
     
     });
 
@@ -127,6 +122,23 @@ exports.ViewList = async function (req,res){
 
 exports.UpdateUser = async (req, res) => {
   try {
+
+    
+const {errors, isvalid}  = EditUserValidation(req);
+
+
+if(!isvalid){
+  let response = error_function({
+     statusCode:400,
+     message:"validation failed"
+  });
+  response.errors = errors;
+  return res.status(response.statusCode).send(response);
+}
+
+
+
+
     const data = req.body;
     console.log("data:", data);
     

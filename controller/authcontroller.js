@@ -18,7 +18,7 @@ exports.login = async function(req, res) {
         message: "validation failed"
        });
        response.login_errors = login_errors;
-       res.status(response.statusCode).send(response);
+      return res.status(response.statusCode).send(response);
     }
 
 
