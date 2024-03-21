@@ -11,7 +11,7 @@ const EditUserValidation = require('../validation/EditUser-validation');
 exports.Adduser = async function(req, res) {
   try {
 
-    const { errors, isValid } = AddUserValidation(req);
+    const { errors, isValid } = await AddUserValidation(req);
 
     if (!isValid) {
         let response = {

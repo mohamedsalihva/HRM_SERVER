@@ -6,13 +6,12 @@ module.exports = async function ValidateAdduser(req) {
     let errors = {};
 
     const { name, email, password, address } = req.body;
-    
+
     console.log("Validation file reached");
 
     const nameValue = !isEmpty(name) ? name : "";
     console.log("Name:", nameValue);
-  
-    
+
     const emailValue = !isEmpty(email) ? email : "";
     console.log("Email:", emailValue);
 
@@ -20,8 +19,7 @@ module.exports = async function ValidateAdduser(req) {
     console.log("Password:", passwordValue);
 
     const addressValue = !isEmpty(address) ? address : "";
-   console.log("Address:", addressValue);
-
+    console.log("Address:", addressValue);
 
     if (validator.isEmpty(nameValue)) {
         errors.name = "Name field is required";
@@ -32,16 +30,14 @@ module.exports = async function ValidateAdduser(req) {
     }
 
     if (!validator.isEmail(emailValue)) {
-        errors.email = " email is required";
-    }else{
-    
-            const emailCount = await users.countDocuments({ email: emailValue });
-            if (emailCount > 0) {
-                errors.email = "Email already exists";
-            }
-
+        errors.email = "Invalid email format";
+    } else {
+        
+        const emailCount = await users.countDocuments({ email: emailValue });
+        if (emailCount > 0) {
+            errors.email = "Email already exists";
+        }
     }
-
 
     if (validator.isEmpty(passwordValue)) {
         errors.password = "Password is required";
@@ -56,3 +52,4 @@ module.exports = async function ValidateAdduser(req) {
         isValid: isEmpty(errors),
     };
 };
+
