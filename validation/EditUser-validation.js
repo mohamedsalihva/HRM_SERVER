@@ -22,10 +22,12 @@ module.exports = function ValidateEditUser(req){
     
     
     
-    if(validator.isEmail(emailValue)){
-        errors.email="email  is required"
-    }
-    
+  if (validator.isEmpty(emailValue)) {
+    errors.email = "Email is required";
+  } else if (!validator.isEmail(emailValue)) {
+    errors.email = "Invalid email format";
+  }
+
     
     
     if(validator.isEmpty(addressValue)){
