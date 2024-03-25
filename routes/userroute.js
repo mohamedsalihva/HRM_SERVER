@@ -9,8 +9,8 @@ const usercontroller =require('../controller/usercontroller')
     }
  };
 
-router.post('/Adduser',setAccessControl('1'),usercontroller.Adduser);
-router.get('/getuser',usercontroller.ViewList);
-router.put('/UpdateUser',usercontroller.UpdateUser);
-router.delete('/delete',usercontroller.DeleteUser);
+router.post('/users',setAccessControl('1'),usercontroller.Adduser);
+router.get('/users',usercontroller.ViewList);
+router.put('/users',usercontroller.UpdateUser);
+router.delete('/users',usercontroller.DeleteUser);
 module.exports=router;
