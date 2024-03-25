@@ -42,7 +42,7 @@ exports.login = async function(req, res) {
     }
 
     
-    const token = jwt.sign({}, process.env.JWT_SECRET,);
+    const token = jwt.sign({user_id : user._id}, process.env.JWT_SECRET,{expiresIn : "1d"});
 
     const response = success_function({
       statusCode: 200,

@@ -51,7 +51,8 @@ exports.Adduser = async function(req, res) {
       email,
       password: hashed_password,
       address,
-    
+      user_type:"65f93a85a44207acf7b2777e"
+      
     });
 
     if (new_user) {

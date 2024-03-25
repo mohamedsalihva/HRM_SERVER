@@ -1,8 +1,16 @@
 const express = require('express');
 const  router = express.Router()
-
+const accessControl = require('../utils/access-control').accessControl
 const authercontroller=require('../controller/authcontroller')
 
-router.post('/login',authercontroller.login)
+const setAccessControl = (access_type) => {
+    return (req, res, next) => {
+        accessControl(access_type, req, res, next);
+    }
+};
+
+
+
+router.post('/login',setAccessControl('*'),authercontroller.login)
 
 module.exports=router;
