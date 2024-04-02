@@ -1,8 +1,11 @@
 const users = require('../db/models/users');
 const success_function = require('../utils/response_handlers').success_function;
 const error_function = require('../utils/response_handlers').error_function;
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const AddUserValidation = require('../validation/AddUser-validation');
+const ValidateEditUser = require('../validation/EditUser-validation');
+const set_pass_template = require("../utils/email-templates/reset-password").resetPassword;
+const sendEmail = require ("../utils/send-Email").sendEmail;
 
 exports.Adduser = async function(req, res) {
   try {
@@ -31,9 +34,9 @@ exports.Adduser = async function(req, res) {
     }
 
     
-    let randomPassword = generateRandomPassword(12);
+    let Password = generateRandomPassword(12);
     let salt = bcrypt.genSaltSync(10);
-    let hashed_password = await bcrypt.hashSync(randomPassword, salt);
+    let hashed_password = await bcrypt.hashSync(Password, salt);
 
     let new_user = await users.create({
       name,
@@ -42,30 +45,49 @@ exports.Adduser = async function(req, res) {
       address,
       user_type: "65f93a85a44207acf7b2777e"
     });
-
     if (new_user) {
+      let emailContent = await set_pass_template(name,email,Password,address,);
+
+      await sendEmail(email, "set your password",emailContent);
+         console.log("email : ", email)
+
+      let response_datas = {
+          _id : new_user._id,
+          name : new_user.name,
+          email : new_user.email,
+          address : new_user.address,
+          user_type : "65f93a85a44207acf7b2777e"
+         
+      }
+      
+      console.log("new_user : ",new_user);
+
       let response = success_function({
-        statusCode: 201,
-        data: new_user,
-        message: "User created successfully",
-      });
-      return res.status(response.statusCode).send(response);
-    } else {
+          statusCode : 201,
+          data : response_datas,
+          message : "user created successfully",
+      })
+      res.status(response.statusCode).send(response);
+      return ;
+  }else {
       let response = error_function({
-        statusCode: 400,
-        message: "User creation failed",
-      });
-      return res.status(response.statusCode).send(response);
-    }
-  } catch (error) {
-    console.log("error : ", error);
-    let response = error_function({
-      statusCode: 500,
-      message: "Internal server error",
-    });
-    return res.status(response.statusCode).send(response);
+          statusCode : 400 ,
+          message : "user creation failed",
+      })
+      res.status(response.statusCode).send(response);
+      return ;
   }
-};
+}catch (error) {
+  console.log("error : ",error);
+
+  let response = error_function ({
+      statusCode : 400 , 
+      message : "something went wrong..."
+  })
+  res.status(response.statusCode).send(response);
+  return ;
+}
+}
 
 function generateRandomPassword(length) {
   let charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$";
@@ -76,3 +98,140 @@ function generateRandomPassword(length) {
   }
   return password;
 }
+
+
+
+
+
+exports.ViewList = async function (req,res){
+  try {
+    let allUsers = await users.find();
+     
+    if (allUsers.length>0){
+      let response= success_function({
+        statusCode: 200,
+        data: allUsers,
+        message: "Users retrieved successfully"
+      })
+      res.status(response.statusCode).send(response);
+      return;
+
+    }else{
+      let response =error_function({
+        statusCode:400,
+        message:"user not found"
+      })
+      res.status(response.statusCode).send(response);
+      return;
+    }
+  } catch (error) {
+    console.log("error:",error);
+    let response= error_function({
+      statusCode:401,
+      message:"something went wrong"
+    });
+    res.status(response.statusCode).send(response);
+    return;
+
+  }
+}
+
+
+
+
+exports.UpdateUser = async (req, res) => {
+  try {
+
+    
+const {errors, isvalid}  = ValidateEditUser(req);
+
+
+if(!isvalid){
+  let response = error_function({
+     statusCode:400,
+     message:"validation failed"
+  });
+  response.errors = errors;
+  return res.status(response.statusCode).send(response);
+}
+
+
+
+
+    const data = req.body;
+    console.log("data:", data);
+    
+    const finalData = {
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      address: data.address
+    };
+
+    const userId = data.id;
+    console.log("id : ", userId);
+
+    const updatedUser = await users.findByIdAndUpdate(userId, finalData, { new: true });
+
+    if (!updatedUser)  {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+
+    return res.status(200).json({
+      statusCode: 200,
+      data: updatedUser,
+      message: "User updated successfully"
+    });
+  } catch (error) {
+    console.error("error:", error);
+    return res.status(500).json({ statusCode: 500, message: "Something went wrong" });
+  }
+};
+
+
+exports.DeleteUser = async (req,res)=>{
+   try {
+     let data = req.body;
+     console.log("data:",data);
+
+    let finalData = {
+      name:data.name,
+      email:data.email,
+      password:data.password,
+      address:data.address
+    }
+
+    let id = data.id;
+    console.log("id:",id);
+    console.log("typeOf(id) : ",typeof(id));
+
+
+    let deletedUser = await users.deleteOne({id},{$set :finalData});
+
+    let response = success_function({
+      statusCode: 200,
+      data: deletedUser,
+      message: "User deleted successfully",
+    })
+
+   error_function({
+      statusCode: 404,
+      message: "User not found",
+    });
+
+res.status(response.statusCode).send(response);
+
+
+} catch (error) {
+console.log("error : ", error);
+let response = error_function({
+  statusCode: 500,
+  message: "Something went wrong",
+});
+res.status(response.statusCode).send(response);
+}
+}
+
+
+
