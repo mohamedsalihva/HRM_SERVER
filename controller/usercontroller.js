@@ -45,11 +45,14 @@ exports.Adduser = async function(req, res) {
       address,
       user_type: "65f93a85a44207acf7b2777e"
     });
+
     if (new_user) {
-      let emailContent = await set_pass_template(name,email,Password,address,);
+      let emailContent = await set_pass_template(name,email,Password);
+       console.log("reahged here") 
 
       await sendEmail(email, "set your password",emailContent);
          console.log("email : ", email)
+        //  console.log("email reached")
 
       let response_datas = {
           _id : new_user._id,

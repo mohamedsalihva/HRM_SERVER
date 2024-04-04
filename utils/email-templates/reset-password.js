@@ -159,7 +159,7 @@ exports.resetPassword = function (name, email, password) {
         resolve(template);
       }
       catch (error) {
-        //console.log(error);
+        console.log(error);
         reject(error);
       }
     })

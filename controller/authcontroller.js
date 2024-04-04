@@ -28,14 +28,14 @@ exports.login = async function(req, res) {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const comparePassword = await bcrypt.compare(password, user.password);
+    const comparePassword =  bcrypt.compare(password, user.password);
 
     if (!comparePassword) {
       console.error("Invalid password:", password);
       return res.status(401).json({ error: 'Invalid password' });
     }
 
-    const token = jwt.sign({ user_id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+    const token = jwt.sign({ user_id: user._id }, process.env.JWT_SECRET, );
 
     const response = success_function({
       statusCode: 200,
