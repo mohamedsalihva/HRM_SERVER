@@ -1,10 +1,9 @@
 const users = require('../db/models/users');
 const success_function = require('../utils/response_handlers').success_function;
 const error_function = require('../utils/response_handlers').error_function;
-const validateLogin = require('../validation/Login-validation')
+const validateLogin = require('../validation/Login-validation');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-
+// const bcrypt = require('bcryptjs');
 
 exports.login = async function(req, res) {
   try {
@@ -22,20 +21,22 @@ exports.login = async function(req, res) {
     let email = req.body.email;
     let password = req.body.password;
 
+    console.log("Email:", email);
+    console.log("Password:", password);
+
     const user = await users.findOne({ email });
+
+    console.log("User:", user);
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-
-    const comparePassword =  bcrypt.compare(password, user.password);
-
-    if (!comparePassword) {
+    if (user.password !== password) {
       console.error("Invalid password:", password);
       return res.status(401).json({ error: 'Invalid password' });
     }
 
-    const token = jwt.sign({ user_id: user._id }, process.env.JWT_SECRET, );
+    const token = jwt.sign({ user_id: user._id }, process.env.JWT_SECRET);
 
     const response = success_function({
       statusCode: 200,

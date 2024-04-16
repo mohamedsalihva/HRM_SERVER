@@ -8,7 +8,7 @@ module.exports = {
       _id:"65eb1a13212a3c1eb96cb993",
       name:"salih",
       email:"salih@gmail.com",
-      password:"salih123",
+      password:"Salih@123",
       address:"ernakulam aluva",
       user_type:"65f93a3fa44207acf7b2777d",
     }
