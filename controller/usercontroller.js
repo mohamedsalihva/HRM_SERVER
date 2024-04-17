@@ -205,7 +205,7 @@ exports.DeleteUser = async (req,res)=>{
       address:data.address
     }
 
-    let id = data.id;
+    let id = data._id;
     console.log("id:",id);
     console.log("typeOf(id) : ",typeof(id));
 
