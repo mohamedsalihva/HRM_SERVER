@@ -192,49 +192,43 @@ if(!isvalid){
   }
 };
 
+exports.DeleteUser = async (req, res) => {
+  try {
+    let data = req.body;
+    console.log("data:", data);
 
-exports.DeleteUser = async (req,res)=>{
-   try {
-     let data = req.body;
-     console.log("data:",data);
+    let userId = data._id;
+    console.log("userId:", userId);
+    console.log("typeOf(userId) : ", typeof(userId));
 
-    let finalData = {
-      name:data.name,
-      email:data.email,
-      password:data.password,
-      address:data.address
+    let deletedUser = await users.deleteOne({ _id: userId });
+    console.log("deletedUser:",deletedUser)
+
+    if (deletedUser.deletedCount === 1) {
+      let response = {
+        success: true,
+        statusCode: 200,
+        data: deletedUser,
+        message: "User deleted successfully",
+      };
+      res.status(response.statusCode).send(response);
+    } else {
+      let response = {
+        success: false,
+        statusCode: 404,
+        data: null,
+        message: "User not found",
+      };
+      res.status(response.statusCode).send(response);
     }
 
-    let id = data._id;
-    console.log("id:",id);
-    console.log("typeOf(id) : ",typeof(id));
-
-
-    let deletedUser = await users.deleteOne({id},{$set :finalData});
-
-    let response = success_function({
-      statusCode: 200,
-      data: deletedUser,
-      message: "User deleted successfully",
-    })
-
-   error_function({
-      statusCode: 404,
-      message: "User not found",
-    });
-
-res.status(response.statusCode).send(response);
-
-
-} catch (error) {
-console.log("error : ", error);
-let response = error_function({
-  statusCode: 500,
-  message: "Something went wrong",
-});
-res.status(response.statusCode).send(response);
-}
-}
-
-
-
+  } catch (error) {
+    console.log("error:", error);
+    let response = {
+      success: false,
+      statusCode: 500,
+      message: "Something went wrong",
+    };
+    res.status(response.statusCode).send(response);
+  }
+};
