@@ -1,4 +1,4 @@
-exports.resetPassword = function (name, url) {
+exports.resetPassword = function (name, email, password) {
     return new Promise(async (resolve, reject) => {
       try {
         let template = `
@@ -11,6 +11,7 @@ exports.resetPassword = function (name, url) {
                             margin: 0px !important;
                             font-family: sans-serif !important;
                           }
+                      
                           .logo {
                             max-height: 70px !important;
                           }
@@ -107,32 +108,9 @@ exports.resetPassword = function (name, url) {
                           .table-bg{
                             background-color: #f3f3f3;
                           }
-                          
-                          .btn {
-                              
-                                align-items: center;
-                                padding: 6px 14px;
-                                font-family: -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
-                                border-radius: 6px;
-                                border: none;
-                                background: #6E6D70;
-                                box-shadow: 0px 0.5px 1px rgba(0, 0, 0, 0.1), inset 0px 0.5px 0.5px rgba(255, 255, 255, 0.5), 0px 0px 0px 0.5px rgba(0, 0, 0, 0.12);
-                                color: #DFDEDF;
-                              
-                          }
-                          
-                          .btn:hover {
-                              color: #6E6D70;
-                              background:#DFDEDF ;
-                          }
-                          
-                          .warning-text {
-                              font-size : 12;
-                          }
-                          
                     </style>
                 </head>
-  
+
                 <body>
                     <div class="col-12 pt-3 pb-3 banner">
                         <div class="container text-white">
@@ -141,44 +119,47 @@ exports.resetPassword = function (name, url) {
                     </div>
                     <div class="container mt-3 mb-5">
                         <div class="p-3">
-                            <div>Hi ${name},</div>
-                            <p>Forgot your password?</p>
-                            <p>We recieved a request to reset the password for your account.</p>
-                            <p>To reset your password click on the button below: </p>
-                            <a href="${url}"> <button class = "btn">Reset Password</button> </a>
+                            <div>Hello ${name},</div>
                             <div class="mb-3 text-justify mt-3">
                               <span class="text-dark">
                                     <!--add any text here-->
-                                Or copy and paste the url into your browser:
+                                Your email :
                               </span>
-                              <br><br>
-                              <b class="text-warning">${url}</b>
+                              <b class="text-warning">${email}</b>
                               <br><br>
                               <span class="text-dark">
-                                 <br><br>
-                              <span class="text-dark" class="warning-text">
-                                  <div class="warning-text">
+                                  
+                                                                <span class="text-dark">
+                                    <!--add any text here-->
+                                Your password :
+                              </span>
+                              <b class="text-warning">${password}</b>
+                              <br><br>
+                              <span class="text-dark">
                              Please do not show or forward it to third parties.
                                 <br><br>
-                              The information contained in this message is intended for the addressee only and may contain classified information. If you are not the addressee, please delete this message and notify the sender; you should not copy or distribute it or disclose its contents to anyone.
-                              </div>
+                              The information contained in this message is intended for the addressee only and may contain classified information. If you are not the addressee, please delete this message and notify the sender; you should not copy or distribute it or disclose its contents to anyone. 
                               </span>
                               <br><br><br><br>
                               <span class="text-muted text-justify mt-3">
+                                <!--Помощь - это просто. Главное - делать это вместе.-->
                                 <br><br>
+                                <!--С верой в будущее,-->
                                 <br>
+                                <!--Команда Помоград-->
                                 <br><br>
+                                <!--link here-->
                               </span>
                             </div>
                         </div>
                     </div>
                 </body>
-            </html>                 
+            </html>           
               `;
         resolve(template);
       }
       catch (error) {
-        //console.log(error);
+        console.log(error);
         reject(error);
       }
     })

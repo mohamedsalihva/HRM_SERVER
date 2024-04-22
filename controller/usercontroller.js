@@ -4,7 +4,7 @@ const error_function = require('../utils/response_handlers').error_function;
 const bcrypt = require('bcryptjs');
 const AddUserValidation = require('../validation/AddUser-validation');
 const ValidateEditUser = require('../validation/EditUser-validation');
-const set_pass_template = require("../utils/email-templates/reset-password").resetPassword;
+const set_pass_template = require("../utils/email-templates/set-password").resetPassword;
 const sendEmail = require ("../utils/send-Email").sendEmail;
 
 exports.Adduser = async function(req, res) {
