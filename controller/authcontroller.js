@@ -3,11 +3,11 @@ const success_function = require('../utils/response_handlers').success_function;
 const error_function = require('../utils/response_handlers').error_function;
 const validateLogin = require('../validation/Login-validation');
 const jwt = require('jsonwebtoken');
-const sendEmail = require ("../utils/send-Email").sendEmail;
-// const resetPassword = require('../utils/email-templates/reset-password')
+const sendEmail = require("../utils/send-Email").sendEmail;
+const resetPassword = require('../utils/email-templates/reset-password').resetPassword
 // const bcrypt = require('bcryptjs');
 
-exports.login = async function(req, res) {
+exports.login = async function (req, res) {
   try {
     const { login_errors, login_valid } = validateLogin(req);
 
@@ -57,48 +57,60 @@ exports.login = async function(req, res) {
   }
 };
 
-exports.forgotpassword = async function(req, res) {
+exports.forgotPassword = async function (req, res) {
   try {
     let email = req.body.email;
-    if (!email) {
-      let response = error_function({
-        statusCode: 400,
-        message: "Email is required",
-      });
-      res.status(response.statusCode).send(response);
-      return;
-    }
 
-    let user = await users.findOne({ email });
-    if (!user) {
-      let response = error_function({
-        statusCode: 404,
-        message: "User not found",
-      });
-      res.status(response.statusCode).send(response);
-      return;
-    }
+    if (email) {
+      let user = await users.findOne({ email: email });
+      // console.log("user:",user)
+      if (user) {
+        let reset_token = jwt.sign(
+          { user_id: user._id },
+          process.env.JWT_SECRET,
+          { expiresIn: "10m" }
+        );
+        // console.log("reset_token:",reset_token)
+        let data = await users.updateOne(
+          { email: email },
+          { $set: { password_token: reset_token } }
 
-    let reset_token = jwt.sign({ user_id: user._id }, process.env.JWT_SECRET, { expiresIn: "10min" });
-    // console.log("user:",user)
-    let data = await users.updateOne({ email }, { $set: { password_token: reset_token } });
-    
-
-    if (data.matchedCount === 1 && data.modifiedCount === 1) {
-      let reset_link = `${process.env.FRONTEND_URL}/reset-password?token=${reset_token}`;
-      let email_template = await resetPassword(user.name, reset_link);
-      await sendEmail(email, "forgotpassword", email_template);
-      
-      let response = success_function({
-        statusCode: 200,
-        message: "Email sent successfully",
-      });
-      res.status(response.statusCode).send(response);
-      return;
+        );
+        //console.log("data:",data)
+        if (data.matchedCount === 1 && data.modifiedCount == 1) {
+          let reset_link = `${process.env.FRONTEND_URL}/forgot-password?token=${reset_token}`;
+          let email_template = await resetPassword(user.name, reset_link);
+          sendEmail(email, "Forgot password", email_template);
+          let response = success_function({
+            statusCode: 200,
+            message: "Email sent successfully",
+          });
+          res.status(response.statusCode).send(response);
+          return;
+        } else if (data.matchedCount === 0) {
+          let response = error_function({
+            statusCode: 404,
+            message: "User not found",
+          });
+          res.status(response.statusCode).send(response);
+          return;
+        } else {
+          let response = error_function({
+            statusCode: 400,
+            message: "Password reset failed",
+          });
+          res.status(response.statusCode).send(response);
+          return;
+        }
+      } else {
+        let response = error_function({ statusCode: 403, message: "Forbidden" });
+        res.status(response.statusCode).send(response);
+        return;
+      }
     } else {
       let response = error_function({
-        statusCode: 400,
-        message: "Password reset failed",
+        statusCode: 422,
+        message: "Email is required",
       });
       res.status(response.statusCode).send(response);
       return;
@@ -107,13 +119,19 @@ exports.forgotpassword = async function(req, res) {
     if (process.env.NODE_ENV == "production") {
       let response = error_function({
         statusCode: 400,
-        message: error.message || "Something went wrong",
+        message: error
+          ? error.message
+            ? error.message
+            : error
+          : "Something went wrong",
       });
+
       res.status(response.statusCode).send(response);
+      return;
     } else {
       let response = error_function({ statusCode: 400, message: error });
       res.status(response.statusCode).send(response);
+      return;
     }
   }
-  
 };

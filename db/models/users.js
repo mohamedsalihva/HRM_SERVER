@@ -19,6 +19,9 @@ const users = mongoose.Schema({
         type:String,
     
     },
+    password_token:{
+        type:String,
+    },
     user_type:{ type :mongoose.Schema.Types.ObjectId, ref:"user_types"}
 });
 
