@@ -11,7 +11,8 @@ const setAccessControl = (access_type) => {
 
 
 
-router.post('/login',setAccessControl('*'),authercontroller.login)
-router.post('/forgot-password',setAccessControl('*'),authercontroller.forgotPassword)
+router.post('/login',setAccessControl('*'),authercontroller.login);
+router.post('/forgot-password',setAccessControl('*'),authercontroller.forgotPassword);
+router.patch('/reset-password',setAccessControl('*'),authercontroller.resetPassword);
 
 module.exports=router;

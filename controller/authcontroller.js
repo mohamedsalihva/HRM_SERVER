@@ -5,7 +5,7 @@ const validateLogin = require('../validation/Login-validation');
 const jwt = require('jsonwebtoken');
 const sendEmail = require("../utils/send-Email").sendEmail;
 const resetPassword = require('../utils/email-templates/reset-password').resetPassword
-// const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs');
 
 exports.login = async function (req, res) {
   try {
@@ -76,9 +76,11 @@ exports.forgotPassword = async function (req, res) {
           { $set: { password_token: reset_token } }
 
         );
+
         //console.log("data:",data)
+
         if (data.matchedCount === 1 && data.modifiedCount == 1) {
-          let reset_link = `${process.env.FRONTEND_URL}/forgot-password?token=${reset_token}`;
+          let reset_link = `${process.env.FRONTEND_URL}/reset-password?token=${reset_token}`;
           let email_template = await resetPassword(user.name, reset_link);
           sendEmail(email, "Forgot password", email_template);
           let response = success_function({
@@ -132,6 +134,90 @@ exports.forgotPassword = async function (req, res) {
       let response = error_function({ statusCode: 400, message: error });
       res.status(response.statusCode).send(response);
       return;
+    }
+  }
+};
+
+
+exports.resetPassword = async function (req, res) {
+  try {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader.split(" ")[1];
+
+    let password = req.body.password;
+    let confirmPassword = req.body.confirmPassword;
+
+    // Check if password and confirmPassword match
+    if (password !== confirmPassword) {
+      const response = {
+        statusCode: 400,
+        message: "Password and confirm password do not match"
+      };
+      return res.status(response.statusCode).json(response);
+    }
+
+    // Decode the token to get the user ID
+    const decoded = jwt.decode(token);
+
+    //console.log("Decoded user ID:", decoded.user_id);
+    //console.log("Token:", token);
+
+
+    // Find the user based on user ID and token
+
+    let user = await users.findOne({
+      $and: [{ _id: decoded.user_id }, { password_token: token }]
+    });
+
+    //console.log("user:", user);
+
+
+    if (user) {
+      // Hash the new password
+      let salt = bcrypt.genSaltSync(10);
+      let password_hash = bcrypt.hashSync(password, salt);
+
+      // Update the user's password and clear the password token
+      let data = await users.updateOne(
+        { _id: decoded.user_id },
+        { $set: { password: password_hash, password_token: null } }
+      );
+      //console.log("data:", data)
+      // Check if the password was updated successfully
+      if (data.matchedCount === 1 && data.modifiedCount === 1) {
+        const response = {
+          statusCode: 200,
+          message: "Password changed successfully"
+        };
+        return res.status(response.statusCode).json(response);
+      } else {
+        const response = {
+          statusCode: 400,
+          message: "Password reset failed"
+        };
+        return res.status(response.statusCode).json(response);
+      }
+    } else {
+      const response = {
+        statusCode: 403,
+        message: "Forbidden"
+      };
+      return res.status(response.statusCode).json(response);
+    }
+  } catch (error) {
+    console.log("Error:",error)
+    if (process.env.NODE_ENV === "production") {
+      const response = {
+        statusCode: 400,
+        message: error.message ? error.message : "Something went wrong"
+      };
+      return res.status(response.statusCode).json(response);
+    } else {
+      const response = {
+        statusCode: 400,
+        message: error.message ? error.message : error
+      };
+      return res.status(response.statusCode).json(response);
     }
   }
 };
