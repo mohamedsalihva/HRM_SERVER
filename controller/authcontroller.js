@@ -27,13 +27,13 @@ exports.login = async function (req, res) {
     console.log("Password:", password);
 
     const user = await users.findOne({ email });
-
     console.log("User:", user);
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    if (user.password !== password) {
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
       console.error("Invalid password:", password);
       return res.status(401).json({ error: 'Invalid password' });
     }
@@ -141,83 +141,48 @@ exports.forgotPassword = async function (req, res) {
 
 exports.resetPassword = async function (req, res) {
   try {
-    const authHeader = req.headers["authorization"];
-    const token = authHeader.split(" ")[1];
+    const authHeader = req.headers['authorization'];
+    if (!authHeader) {
+      return res.status(401).send({ message: 'Authorization header is missing' });
+    }
+    const token = authHeader.split(' ')[1];
 
-    let password = req.body.password;
-    let confirmPassword = req.body.confirmPassword;
-
-    // Check if password and confirmPassword match
+    const { password, confirmPassword } = req.body;
     if (password !== confirmPassword) {
-      const response = {
-        statusCode: 400,
-        message: "Password and confirm password do not match"
-      };
-      return res.status(response.statusCode).json(response);
+      return res.status(400).send({ message: 'Password and confirm password do not match' });
     }
 
-    // Decode the token to get the user ID
     const decoded = jwt.decode(token);
+    if (!decoded || !decoded.user_id) {
+      return res.status(400).send({ message: 'Invalid token' });
+    }
 
-    //console.log("Decoded user ID:", decoded.user_id);
-    //console.log("Token:", token);
-
-
-    // Find the user based on user ID and token
-
-    let user = await users.findOne({
-      $and: [{ _id: decoded.user_id }, { password_token: token }]
+    const user = await users.findOne({
+      _id: decoded.user_id,
+      password_token: token
     });
+    console.log("user:", user)
 
-    //console.log("user:", user);
+    if (!user) {
+      return res.status(403).send({ message: 'Forbidden' });
+    }
 
+    const salt = bcrypt.genSaltSync(10);
+    const passwordHash = bcrypt.hashSync(password, salt);
 
-    if (user) {
-      // Hash the new password
-      let salt = bcrypt.genSaltSync(10);
-      let password_hash = bcrypt.hashSync(password, salt);
+    const updateResult = await users.updateOne(
+      { _id: decoded.user_id },
+      { $set: { password: passwordHash, password_token: null } }
+    );
 
-      // Update the user's password and clear the password token
-      let data = await users.updateOne(
-        { _id: decoded.user_id },
-        { $set: { password: password_hash, password_token: null } }
-      );
-      //console.log("data:", data)
-      // Check if the password was updated successfully
-      if (data.matchedCount === 1 && data.modifiedCount === 1) {
-        const response = {
-          statusCode: 200,
-          message: "Password changed successfully"
-        };
-        return res.status(response.statusCode).json(response);
-      } else {
-        const response = {
-          statusCode: 400,
-          message: "Password reset failed"
-        };
-        return res.status(response.statusCode).json(response);
-      }
+    if (updateResult.matchedCount === 1 && updateResult.modifiedCount === 1) {
+      return res.status(200).send({ message: 'Password changed successfully' });
     } else {
-      const response = {
-        statusCode: 403,
-        message: "Forbidden"
-      };
-      return res.status(response.statusCode).json(response);
+      return res.status(400).send({ message: 'Password reset failed' });
     }
   } catch (error) {
-    console.log("Error:",error)
-    if (process.env.NODE_ENV === "production") {
-      const response = {
-        statusCode: 400,
-        message: error.message ? error.message : "Something went wrong"
-      };
-      return res.status(response.statusCode).json(response);
-    } else {
-      const response = {
-        statusCode: 400,
-        message: error.message ? error.message : error
-      };
-      return res.status(response.statusCode).json(response);
-    }
+    console.error('Error:', error);
+    const message = process.env.NODE_ENV === 'production' ? 'Something went wrong' : error.message || 'Something went wrong';
+    return res.status(500).send({ message });
   }
 };
