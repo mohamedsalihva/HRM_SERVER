@@ -7,6 +7,7 @@ const sendEmail = require("../utils/send-Email").sendEmail;
 const resetPassword = require('../utils/email-templates/reset-password').resetPassword
 const bcrypt = require('bcryptjs');
 
+
 exports.login = async function (req, res) {
   try {
     const { login_errors, login_valid } = validateLogin(req);
@@ -26,19 +27,25 @@ exports.login = async function (req, res) {
     console.log("Email:", email);
     console.log("Password:", password);
 
+    
     const user = await users.findOne({ email });
+
     console.log("User:", user);
 
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
+
+
     const passwordMatch = await bcrypt.compare(password, user.password);
+
     if (!passwordMatch) {
       console.error("Invalid password:", password);
       return res.status(401).json({ error: 'Invalid password' });
     }
 
     const token = jwt.sign({ user_id: user._id }, process.env.JWT_SECRET);
+
 
     const response = success_function({
       statusCode: 200,
@@ -56,6 +63,8 @@ exports.login = async function (req, res) {
     res.status(response.statusCode).send(response);
   }
 };
+
+
 
 exports.forgotPassword = async function (req, res) {
   try {

@@ -90,6 +90,7 @@ exports.Adduser = async function(req, res) {
   res.status(response.statusCode).send(response);
   return ;
 }
+
 }
 
 function generateRandomPassword(length) {
@@ -101,8 +102,6 @@ function generateRandomPassword(length) {
   }
   return password;
 }
-
-
 
 
 
