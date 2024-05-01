@@ -107,15 +107,28 @@ function generateRandomPassword(length) {
 exports.ViewList = async function (req, res) {
   try {
     const pageNumber = req.query.page || 1;
-    const pageSize = req.query.pageSize || 3; // Default page size
+    const pageSize = req.query.pageSize || 2; 
     const skip = pageSize * (pageNumber - 1);
+    const searchQuery = req.query.searchQuery || ''; 
 
-    let allUsers = await users.find()
+    let query = {};
+
+    // If search query is provided, filter users based on name or email containing the search query
+    if (searchQuery) {
+      query = {
+        $or: [
+          { name: { $regex: searchQuery, $options: 'i' } }, // Case-insensitive search by name
+          { email: { $regex: searchQuery, $options: 'i' } } // Case-insensitive search by email
+        ]
+      };
+    }
+
+    let allUsers = await users.find(query)
       .skip(skip)
       .limit(pageSize);
 
     if (allUsers.length > 0) {
-      const totalCount = await users.countDocuments();
+      const totalCount = await users.countDocuments(query); 
       const totalPages = Math.ceil(totalCount / pageSize);
 
       let response = success_function({
@@ -148,7 +161,6 @@ exports.ViewList = async function (req, res) {
     res.status(response.statusCode).send(response);
   }
 }
-
 
 
 
