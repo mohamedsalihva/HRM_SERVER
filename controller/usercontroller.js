@@ -104,39 +104,51 @@ function generateRandomPassword(length) {
 }
 
 
-
-exports.ViewList = async function (req,res){
+exports.ViewList = async function (req, res) {
   try {
-    let allUsers = await users.find();
-     
-    if (allUsers.length>0){
-      let response= success_function({
-        statusCode: 200,
-        data: allUsers,
-        message: "Users retrieved successfully"
-      })
-      res.status(response.statusCode).send(response);
-      return;
+    const pageNumber = req.query.page || 1;
+    const pageSize = req.query.pageSize || 3; // Default page size
+    const skip = pageSize * (pageNumber - 1);
 
-    }else{
-      let response =error_function({
-        statusCode:400,
-        message:"user not found"
-      })
+    let allUsers = await users.find()
+      .skip(skip)
+      .limit(pageSize);
+
+    if (allUsers.length > 0) {
+      const totalCount = await users.countDocuments();
+      const totalPages = Math.ceil(totalCount / pageSize);
+
+      let response = success_function({
+        statusCode: 200,
+        data: {
+          users: allUsers,
+          totalPages: totalPages,
+          currentPage: pageNumber,
+          totalCount: totalCount
+        },
+        message: "Users retrieved successfully"
+      });
+
       res.status(response.statusCode).send(response);
-      return;
+    } else {
+      let response = error_function({
+        statusCode: 404,
+        message: "No users found"
+      });
+
+      res.status(response.statusCode).send(response);
     }
   } catch (error) {
-    console.log("error:",error);
-    let response= error_function({
-      statusCode:401,
-      message:"something went wrong"
+    console.log("error:", error);
+    let response = error_function({
+      statusCode: 500,
+      message: "Something went wrong"
     });
-    res.status(response.statusCode).send(response);
-    return;
 
+    res.status(response.statusCode).send(response);
   }
 }
+
 
 
 
